@@ -4,6 +4,7 @@
 
 #include "../gl_utils.h"
 #include "mesh.h"
+// #include "matrix4x4.h"
 
 using namespace std;
 using std::cout;
@@ -46,8 +47,36 @@ Matrix4x4 createWorldToCameraMatrix(const Vector3D& eye, const Vector3D& at, con
 
   // TODO CS248: Camera Matrix
   // Compute the matrix that transforms a point in world space to a point in camera space.
+  // Part 1 to finish
 
-  return Matrix4x4::translation(Vector3D(-20,0,-150));
+  // Per lecture 4 slide 21:
+  // World coordinates --(view transform)-> view coordinates --(project transform)-> clip coordinates --(screen transform)->window coordinates
+
+  // First set up the camera-pointing orthonormal basis
+  Vector3D w, u, v;
+  w = at - eye;
+  w.normalize();
+
+  u = cross(up, w); // Create u using the up vector
+  u.normalize();
+
+  v = cross(w,u);
+  v.normalize(); // Create last vector using the other 2
+
+  // Now, set up the translation and rotations matrices
+  Matrix4x4 trans_mat, rot_mat, tot_mat;
+
+  // translation = simple -eye translation
+  trans_mat = Matrix4x4::translation(-eye);
+  // rotation = inverse xyz->wuv matrix
+  rot_mat[0][0] = u.x;  rot_mat[0][1] = u.y;  rot_mat[0][2] = u.z;  rot_mat[0][3] = 0; 
+  rot_mat[1][0] = v.x;  rot_mat[1][1] = v.y;  rot_mat[1][2] = v.z;  rot_mat[1][3] = 0; 
+  rot_mat[2][0] = -w.x; rot_mat[2][1] = -w.y; rot_mat[2][2] = -w.z; rot_mat[2][3] = 0; 
+  rot_mat[3][0] = 0;    rot_mat[3][1] = 0;    rot_mat[3][2] = 0;    rot_mat[3][3] = 1.0f; 
+  // total translation = trans * rot
+  tot_mat = rot_mat * trans_mat;
+
+  return tot_mat;
 
 }
 
