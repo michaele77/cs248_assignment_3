@@ -70,8 +70,24 @@ vec3 Phong_BRDF(vec3 L, vec3 V, vec3 N, vec3 diffuse_color, vec3 specular_color,
     // TODO CS248: Phong Reflectance
     // Implement diffuse and specular terms of the Phong
     // reflectance model here.
+    vec3 l, v, n, kd, ks;
+    l = normalize(L);
+    v = normalize(V);
+    n = normalize(N);
+    kd = normalize(diffuse_color);
+    ks = normalize(specular_color);
 
-    return diffuse_color;
+    vec3 Rm;
+    Rm = 2*dot(l,n)*n - l;
+
+    vec3 phong_reflectance;
+    phong_reflectance = kd*dot(l,n)*diffuse_color + ks*pow(dot(Rm,v), specular_exponent)*specular_color;
+
+
+    
+
+    return phong_reflectance;
+    // return diffuse_color;
 
 }
 
