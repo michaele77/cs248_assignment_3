@@ -37,6 +37,24 @@ void main(void)
     // mat3 mymatrix = mat3(a, b, c)
     // (3) obj2worldNorm is a 3x3 matrix transforming object space normals to world space normals
     // compute tangent space to world space matrix
+
+    // As per github instructions:
+    // We want to create a rotation matrix that takes tangent space vectors and converts them to world space
+    // Per lecture slide, this would look like:
+    // | u_x  v_x  w_x |    where u, v, w is the tangent space normal, tangent, and binormal vector respectively
+    // | u_y  v_y  w_y |    (NOTE: w column might need to be negative...)
+    // | u_z  v_z  w_z |
+
+    vec3 vtx_binomial, norm_norm, norm_tang, norm_binom;
+    vtx_binomial = cross(vtx_normal, vtx_tangent);
+    
+    norm_norm = normalize(vtx_normal);
+    norm_tang = normalize(vtx_tangent);
+    norm_binom = normalize(vtx_binomial);
+
+    mat3 rot_mat = mat3(norm_norm, norm_tang, norm_binom);
+    tan2world = rot_mat;
+
     
     normal = obj2worldNorm * vtx_normal;
 
