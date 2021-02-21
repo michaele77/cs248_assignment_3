@@ -52,8 +52,10 @@ void main(void)
     norm_tang = normalize(vtx_tangent);
     norm_binom = normalize(vtx_binomial);
 
-    mat3 rot_mat = mat3(norm_norm, norm_tang, norm_binom);
-    tan2world = rot_mat;
+    // mat3 rot_mat = mat3(norm_norm, norm_tang, norm_binom);
+    // tan2world = rot_mat;
+    mat3 tan2objNorm =  mat3(norm_tang,norm_binom, norm_norm);
+    tan2world = obj2worldNorm * tan2objNorm;
 
     
     normal = obj2worldNorm * vtx_normal;
