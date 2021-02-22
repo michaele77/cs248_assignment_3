@@ -14,6 +14,7 @@ uniform bool useMirrorBRDF;         // true if mirror brdf should be used (defau
 
 uniform sampler2D diffuseTextureSampler;
 uniform sampler2D normalTextureSampler;
+uniform sampler2D environmentTextureSampler;
 
 
 //
@@ -71,24 +72,13 @@ vec3 Phong_BRDF(vec3 L, vec3 V, vec3 N, vec3 diffuse_color, vec3 specular_color,
     // TODO CS248: Phong Reflectance
     // Implement diffuse and specular terms of the Phong
     // reflectance model here.
-    vec3 l, v, n, kd, ks;
-    l = normalize(L);
-    v = normalize(V);
-    n = normalize(N);
-    kd = normalize(diffuse_color);
-    ks = normalize(specular_color);
+    float diffuse = max(dot(normalize(L), normalize(N)), 0.); // make sure it is positive
+    vec3 R = 2*dot(normalize(L), normalize(N))*N - normalize(L);
+    float spec = pow(max(dot(normalize(R),normalize(V)),0.0),specular_exponent);
 
-    vec3 Rm;
-    Rm = 2*dot(l,n)*n - l;
+    return diffuse*diffuse_color + spec*specular_color;
+//    return diffuse_color;
 
-    vec3 phong_reflectance;
-    phong_reflectance = kd*dot(l,n)*diffuse_color + ks*pow(dot(Rm,v), specular_exponent)*specular_color;
-
-
-    
-
-    return phong_reflectance;
-    // return diffuse_color;
 
 }
 
@@ -115,8 +105,19 @@ vec3 SampleEnvironmentMap(vec3 D)
     //
     // (3) How do you convert theta and phi to normalized texture
     //     coordinates in the domain [0,1]^2?
+    vec3 normalized = normalize(D);
+    float theta =  acos(normalized.y/(length(normalized)));
+    float phi = atan(normalized.x, normalized.z);
+    // convert negative values to the range 0 - 2PI
+    if (phi<0){
+        phi = phi+ 2*PI;
+    }
+    
+    // convert to texture coordinates
+    vec2 envCoord = vec2(phi/(2*PI), theta/PI);
+    vec3 environmentColor = texture(environmentTextureSampler, envCoord).rgb;
 
-    return vec3(.25, .25, .25);    
+    return environmentColor;   
 }
 
 //
@@ -179,7 +180,8 @@ void main(void)
         // compute perfect mirror reflection direction here.
         // You'll also need to implement environment map sampling in SampleEnvironmentMap()
         //
-        vec3 R = normalize(vec3(1.0));
+        vec3 R = normalize(vec3(1.0));        
+        R = reflect(normalize(-dir2camera), normalize(normal));
         //
 
         // sample environment map

@@ -13,6 +13,7 @@ uniform bool useMirrorBRDF;         // true if mirror brdf should be used (defau
 //
 
 uniform sampler2D diffuseTextureSampler;
+uniform sampler2D environmentTextureSampler;
 
 
 //
@@ -104,8 +105,19 @@ vec3 SampleEnvironmentMap(vec3 D)
     //
     // (3) How do you convert theta and phi to normalized texture
     //     coordinates in the domain [0,1]^2?
+    vec3 normalized = normalize(D);
+    float theta =  acos(normalized.y/(length(normalized)));
+    float phi = atan(normalized.x, normalized.z);
+    // convert negative values to the range 0 - 2PI
+    if (phi<0){
+        phi = phi+ 2*PI;
+    }
+    
+    // convert to texture coordinates
+    vec2 envCoord = vec2(phi/(2*PI), theta/PI);
+    vec3 environmentColor = texture(environmentTextureSampler, envCoord).rgb;
 
-    return vec3(.25, .25, .25);   
+    return environmentColor; 
 }
 
 //
@@ -162,7 +174,7 @@ void main(void)
         // You'll also need to implement environment map sampling in SampleEnvironmentMap()
         //
         vec3 R = normalize(vec3(1.0));
-
+        R = reflect(normalize(-dir2camera), normalize(normal));
 
         // sample environment map
         vec3 envColor = SampleEnvironmentMap(R);

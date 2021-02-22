@@ -47,36 +47,31 @@ Matrix4x4 createWorldToCameraMatrix(const Vector3D& eye, const Vector3D& at, con
 
   // TODO CS248: Camera Matrix
   // Compute the matrix that transforms a point in world space to a point in camera space.
-  // Part 1 to finish
+    Vector3D cameraPos = eye;
+    Vector3D cameraTarget = at;
+    Vector3D D = (cameraPos - cameraTarget);
+    D.normalize();
 
-  // Per lecture 4 slide 21:
-  // World coordinates --(view transform)-> view coordinates --(project transform)-> clip coordinates --(screen transform)->window coordinates
+    Vector3D R = cross(up, D); // right 
+    R.normalize();
 
-  // First set up the camera-pointing orthonormal basis
-  Vector3D w, u, v;
-  w = at - eye;
-  w.normalize();
+    Vector3D U = cross(D, R); // up
+    U.normalize();
 
-  u = cross(up, w); // Create u using the up vector
-  u.normalize();
+    // Final output is a combo of rotation and translation
+    // LookAt is rotation * translation
 
-  v = cross(w,u);
-  v.normalize(); // Create last vector using the other 2
+    Matrix4x4 rot;
+    rot[0][0] = R.x; rot[0][1] = R.y; rot[0][2] = R.z; rot[0][3] = 0.0;
+    rot[1][0] = U.x; rot[1][1] = U.y; rot[1][2] = U.z; rot[1][3] = 0.0;
+    rot[2][0] = D.x; rot[2][1] = D.y; rot[2][2] = D.z; rot[2][3] = 0.0;
+    rot[3][0] = 0.0; rot[3][1] = 0.0; rot[3][2] = 0.0; rot[3][3] = 1.0;
 
-  // Now, set up the translation and rotations matrices
-  Matrix4x4 trans_mat, rot_mat, tot_mat;
+    Matrix4x4 trans = Matrix4x4::translation(-cameraPos);
 
-  // translation = simple -eye translation
-  trans_mat = Matrix4x4::translation(-eye);
-  // rotation = inverse xyz->wuv matrix
-  rot_mat[0][0] = u.x;  rot_mat[0][1] = u.y;  rot_mat[0][2] = u.z;  rot_mat[0][3] = 0; 
-  rot_mat[1][0] = v.x;  rot_mat[1][1] = v.y;  rot_mat[1][2] = v.z;  rot_mat[1][3] = 0; 
-  rot_mat[2][0] = -w.x; rot_mat[2][1] = -w.y; rot_mat[2][2] = -w.z; rot_mat[2][3] = 0; 
-  rot_mat[3][0] = 0;    rot_mat[3][1] = 0;    rot_mat[3][2] = 0;    rot_mat[3][3] = 1.0f; 
-  // total translation = trans * rot
-  tot_mat = rot_mat * trans_mat;
+    Matrix4x4 LookAt = rot * trans;
 
-  return tot_mat;
+    return LookAt;
 
 }
 
