@@ -252,7 +252,27 @@ void main(void)
         //       facing out area.  Smaller values of SMOOTHING will create hard spotlights.
 
         // CS248: remove this once you perform proper attenuation computations
-        intensity = vec3(0.5, 0.5, 0.5);
+        // intensity = vec3(0.5, 0.5, 0.5);
+        
+        // Step 1.
+        float D = length(dir_to_surface);
+        // printf("here is distance %f\n", D);
+        float dist_mod = pow(D, 2.0);
+        intensity = (1.0/(1.0+dist_mod)) * intensity;
+
+        // Step 2.
+        float smoothing_var = 0.25;
+
+        // float angle_spotlightDir_lightsurfacePos;
+        if (angle > (1.0 + smoothing_var) * cone_angle) {
+            intensity = vec3(0);
+        } else if (angle > (1.0 - smoothing_var) * cone_angle) {
+            // If here, we're inteprolating between current intensity and 0
+            // delta_x = 2*smoothing_var*cone_angle
+            float bound_angle = (1.0 + smoothing_var)*cone_angle;
+            intensity = ((bound_angle - angle) / (2*smoothing_var*cone_angle)) * intensity;
+        }
+
 
 
         // Render Shadows for all spot lights
