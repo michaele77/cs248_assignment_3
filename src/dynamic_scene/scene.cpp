@@ -290,7 +290,25 @@ void Scene::renderShadowPass(int shadowedLightIndex) {
     //       drawTriangles();  //  <- Framebuffer 100 is bound, since fb_bind is still alive here.
     // 
     // Replaces the following lines with correct implementation.
-    Matrix4x4 worldToLightNDC = Matrix4x4::identity();
+
+    // (1)
+    auto curr_bind = gl_mgr_->bindFrameBuffer(shadowFrameBufferId_[shadowedLightIndex]);
+
+    // (2)
+    Matrix4x4 worldToLight = createWorldToCameraMatrix(lightPos, camera_->getViewPoint(), camera_->getUpDir()); // only the "eye" is changed from original transform
+    Matrix4x4 proj = createPerspectiveMatrix(fovy, aspect, near, far); // Using params defined above
+    Matrix4x4 worldToLightNDC = proj * worldToLight;
+
+    // (3)
+    float w = fovy;
+    Matrix4x4 inter_shift = Matrix4x4::translation(w);
+    Matrix4x4 worldToShadowLight = 0.5 * inter_shift * worldToLightNDC;
+    worldToShadowLight_[shadowedLightIndex] = worldToShadowLight;
+
+
+
+    // Uncommented Code above is new code!
+    // Matrix4x4 worldToLightNDC = Matrix4x4::identity();
     worldToShadowLight_[shadowedLightIndex].zero();
 
     glViewport(0, 0, shadowTextureSize_, shadowTextureSize_);
