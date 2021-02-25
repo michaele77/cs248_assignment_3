@@ -329,7 +329,7 @@ void Scene::renderShadowPass(int shadowedLightIndex) {
 
     // Uncommented Code above is new code!
     // Matrix4x4 worldToLightNDC = Matrix4x4::identity();
-    // worldToShadowLight_[shadowedLightIndex].zero();
+    // worldToShadowLight_[shadowedLightIndex].zero(); --
 
     glViewport(0, 0, shadowTextureSize_, shadowTextureSize_);
 
