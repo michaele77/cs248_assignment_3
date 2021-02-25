@@ -243,6 +243,12 @@ void Scene::render() {
     Matrix4x4 worldToCamera = createWorldToCameraMatrix(camera_->getPosition(), camera_->getViewPoint(), camera_->getUpDir());
     Matrix4x4 proj = createPerspectiveMatrix(camera_->getVFov(), camera_->getAspectRatio(), camera_->getNearClip(), camera_->getFarClip());  
     Matrix4x4 worldToCameraNDC = proj * worldToCamera;
+    printf("~~~~~~~~~~~~~~~~~~~first one!!!\n");
+    printf("%f, %f, %f, %f\n", worldToCameraNDC[0][0], worldToCameraNDC[0][1], worldToCameraNDC[0][2], worldToCameraNDC[0][3]);
+    printf("%f, %f, %f, %f\n", worldToCameraNDC[1][0], worldToCameraNDC[1][1], worldToCameraNDC[1][2], worldToCameraNDC[1][3]);
+    printf("%f, %f, %f, %f\n", worldToCameraNDC[2][0], worldToCameraNDC[2][1], worldToCameraNDC[2][2], worldToCameraNDC[2][3]);
+    printf("%f, %f, %f, %f\n", worldToCameraNDC[3][0], worldToCameraNDC[3][1], worldToCameraNDC[3][2], worldToCameraNDC[3][3]);
+
 
     for (SceneObject *obj : objects_)
         obj->draw(worldToCameraNDC);
@@ -295,21 +301,35 @@ void Scene::renderShadowPass(int shadowedLightIndex) {
     auto curr_bind = gl_mgr_->bindFrameBuffer(shadowFrameBufferId_[shadowedLightIndex]);
 
     // (2)
-    Matrix4x4 worldToLight = createWorldToCameraMatrix(lightPos, camera_->getViewPoint(), camera_->getUpDir()); // only the "eye" is changed from original transform
+    Matrix4x4 worldToLight = createWorldToCameraMatrix(lightPos, lightDir + lightPos, camera_->getUpDir()); // only the "eye" is changed from original transform
     Matrix4x4 proj = createPerspectiveMatrix(fovy, aspect, near, far); // Using params defined above
     Matrix4x4 worldToLightNDC = proj * worldToLight;
+    printf("~~~~~~~~~~~~~~~~~~~\n");
+    printf("%f, %f, %f, %f\n", worldToLightNDC[0][0], worldToLightNDC[0][1], worldToLightNDC[0][2], worldToLightNDC[0][3]);
+    printf("%f, %f, %f, %f\n", worldToLightNDC[1][0], worldToLightNDC[1][1], worldToLightNDC[1][2], worldToLightNDC[1][3]);
+    printf("%f, %f, %f, %f\n", worldToLightNDC[2][0], worldToLightNDC[2][1], worldToLightNDC[2][2], worldToLightNDC[2][3]);
+    printf("%f, %f, %f, %f\n", worldToLightNDC[3][0], worldToLightNDC[3][1], worldToLightNDC[3][2], worldToLightNDC[3][3]);
 
     // (3)
-    float w = fovy;
+    // CHECK! I have no idea if this is correct lol ....
+    // float w = fovy;
+    // Vector3D w = lightDir + lightPos;
+    Vector3D w; w.x = fovy; w.y = fovy; w.z = fovy;
     Matrix4x4 inter_shift = Matrix4x4::translation(w);
     Matrix4x4 worldToShadowLight = 0.5 * inter_shift * worldToLightNDC;
     worldToShadowLight_[shadowedLightIndex] = worldToShadowLight;
+    printf("~~~~~~~~~~~~~~~~~~~intershift\n");
+    printf("%f, %f, %f, %f\n", inter_shift[0][0], inter_shift[0][1], inter_shift[0][2], inter_shift[0][3]);
+    printf("%f, %f, %f, %f\n", inter_shift[1][0], inter_shift[1][1], inter_shift[1][2], inter_shift[1][3]);
+    printf("%f, %f, %f, %f\n", inter_shift[2][0], inter_shift[2][1], inter_shift[2][2], inter_shift[2][3]);
+    printf("%f, %f, %f, %f\n", inter_shift[3][0], inter_shift[3][1], inter_shift[3][2], inter_shift[3][3]);
+
 
 
 
     // Uncommented Code above is new code!
     // Matrix4x4 worldToLightNDC = Matrix4x4::identity();
-    worldToShadowLight_[shadowedLightIndex].zero();
+    // worldToShadowLight_[shadowedLightIndex].zero();
 
     glViewport(0, 0, shadowTextureSize_, shadowTextureSize_);
 
