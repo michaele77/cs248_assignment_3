@@ -67,6 +67,12 @@ Matrix4x4 createWorldToCameraMatrix(const Vector3D& eye, const Vector3D& at, con
     rot[2][0] = D.x; rot[2][1] = D.y; rot[2][2] = D.z; rot[2][3] = 0.0;
     rot[3][0] = 0.0; rot[3][1] = 0.0; rot[3][2] = 0.0; rot[3][3] = 1.0;
 
+    rot[0][0] = R.x; rot[0][1] = U.x; rot[0][2] = D.x; rot[0][3] = 0.0;
+    rot[1][0] = R.y; rot[1][1] = U.y; rot[1][2] = D.y; rot[1][3] = 0.0;
+    rot[2][0] = R.z; rot[2][1] = U.z; rot[2][2] = D.z; rot[2][3] = 0.0;
+    rot[3][0] = 0.0; rot[3][1] = 0.0; rot[3][2] = 0.0; rot[3][3] = 1.0;
+
+
     Matrix4x4 trans = Matrix4x4::translation(-cameraPos);
 
     Matrix4x4 LookAt = rot * trans;
@@ -316,7 +322,15 @@ void Scene::renderShadowPass(int shadowedLightIndex) {
     // Vector3D w = lightDir + lightPos;
     Vector3D w; w.x = fovy; w.y = fovy; w.z = fovy;
     Matrix4x4 inter_shift = Matrix4x4::translation(w);
-    Matrix4x4 worldToShadowLight = 0.5 * inter_shift * worldToLightNDC;
+    // Matrix4x4 inter_shift;
+    // inter_shift[0][0] =.5; inter_shift[0][1] = 0;  inter_shift[0][2] = 0;  inter_shift[0][3] = .5;
+    // inter_shift[1][0] = 0; inter_shift[1][1] = .5; inter_shift[1][2] = 0;  inter_shift[1][3] = .5;
+    // inter_shift[2][0] = 0; inter_shift[2][1] = 0;  inter_shift[2][2] = .5; inter_shift[2][3] = .5;
+    // inter_shift[3][0] = 0; inter_shift[3][1] = 0;  inter_shift[3][2] = 0;  inter_shift[3][3] = 1;
+    
+    Matrix4x4 worldToShadowLight = worldToLightNDC;
+    // Matrix4x4 worldToShadowLight = inter_shift * worldToLightNDC;
+    // Matrix4x4 worldToShadowLight = worldToLightNDC;
     worldToShadowLight_[shadowedLightIndex] = worldToShadowLight;
     printf("~~~~~~~~~~~~~~~~~~~intershift\n");
     printf("%f, %f, %f, %f\n", inter_shift[0][0], inter_shift[0][1], inter_shift[0][2], inter_shift[0][3]);

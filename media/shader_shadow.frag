@@ -15,6 +15,7 @@ uniform bool useMirrorBRDF;         // true if mirror brdf should be used (defau
 uniform sampler2D diffuseTextureSampler;
 uniform sampler2D normalTextureSampler;
 uniform sampler2D environmentTextureSampler;
+uniform sampler2D shadowTextureSampler;
 
 
 //
@@ -22,7 +23,7 @@ uniform sampler2D environmentTextureSampler;
 // and point light sources, as well as an environment map
 //
 
-#define MAX_NUM_LIGHTS 10
+#define MAX_NUM_LIGHTS 5
 uniform int  num_directional_lights;
 uniform vec3 directional_light_vectors[MAX_NUM_LIGHTS];
 
@@ -34,6 +35,8 @@ uniform vec3  spot_light_positions[MAX_NUM_LIGHTS];
 uniform vec3  spot_light_directions[MAX_NUM_LIGHTS];
 uniform vec3  spot_light_intensities[MAX_NUM_LIGHTS];
 uniform float spot_light_angles[MAX_NUM_LIGHTS];
+
+// uniform mat4 shadowlight_mtx[MAX_NUM_LIGHTS];
 
 
 //
@@ -51,6 +54,7 @@ in vec2 texcoord;     // surface texcoord (uv)
 in vec3 dir2camera;   // vector from surface point to camera
 in mat3 tan2world;    // tangent space to world space transform
 in vec3 vertex_diffuse_color; // surface color
+in vec4 lightspace_pos[MAX_NUM_LIGHTS];
 
 out vec4 fragColor;
 
@@ -277,6 +281,37 @@ void main(void)
 
         // Render Shadows for all spot lights
         // CS248 TODO: Shadow Mapping: comute shadowing for spotlight i here 
+        float shadow_multiplier = 0.2;
+        // for (int i = 0; i < num_spot_lights; i++) {
+        vec3 shadow_uv = lightspace_pos[i].xyz / lightspace_pos[i].w;
+        // vec4 curr_lightspace = lightspace_pos[i];
+        // shadow_uv[0] = curr_lightspace.x / curr_lightspace.w;
+        shadow_uv = shadow_uv*0.5 + 0.5;
+        // shadow_uv = vec3(0);
+        float closestDepth = texture(shadowTextureSampler, shadow_uv.xy).r;
+        // float depthMap_dist = 0;
+
+        float currentDepth = shadow_uv.z;
+
+        // float pos_delta = real_dist - depthMap_dist;
+
+        if (currentDepth > closestDepth) {
+            intensity *= shadow_multiplier;
+        }
+
+        // vec3 depthMap_dist = texture(shadowTextureSampler, shadow_uv).rgb;
+
+        // vec3 real_dist = spot_light_positions[i] - position;
+
+        // float pos_delta = length(real_dist) - length(depthMap_dist);
+
+        // if (pos_delta > 0) {
+        //     intensity *= shadow_multiplier;
+        // }
+
+        // }
+        
+
 
 
 	    vec3 L = normalize(-spot_light_directions[i]);
