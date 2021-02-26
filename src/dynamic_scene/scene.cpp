@@ -276,7 +276,7 @@ void Scene::renderShadowPass(int shadowedLightIndex) {
     float fovy = std::max(1.4f * coneAngle, 60.0f);
     float aspect = 1.0f;
     float near = 10.f;
-    float far = 400.;
+    float far = 400.f;
 
     // TODO CS248: Shadow Mapping
     // Here we render the shadow map for the given light. You need to accomplish the following:
@@ -310,33 +310,41 @@ void Scene::renderShadowPass(int shadowedLightIndex) {
     Matrix4x4 worldToLight = createWorldToCameraMatrix(lightPos, lightDir + lightPos, camera_->getUpDir()); // only the "eye" is changed from original transform
     Matrix4x4 proj = createPerspectiveMatrix(fovy, aspect, near, far); // Using params defined above
     Matrix4x4 worldToLightNDC = proj * worldToLight;
-    printf("~~~~~~~~~~~~~~~~~~~\n");
-    printf("%f, %f, %f, %f\n", worldToLightNDC[0][0], worldToLightNDC[0][1], worldToLightNDC[0][2], worldToLightNDC[0][3]);
-    printf("%f, %f, %f, %f\n", worldToLightNDC[1][0], worldToLightNDC[1][1], worldToLightNDC[1][2], worldToLightNDC[1][3]);
-    printf("%f, %f, %f, %f\n", worldToLightNDC[2][0], worldToLightNDC[2][1], worldToLightNDC[2][2], worldToLightNDC[2][3]);
-    printf("%f, %f, %f, %f\n", worldToLightNDC[3][0], worldToLightNDC[3][1], worldToLightNDC[3][2], worldToLightNDC[3][3]);
+
 
     // (3)
     // CHECK! I have no idea if this is correct lol ....
     // float w = fovy;
     // Vector3D w = lightDir + lightPos;
-    Vector3D w; w.x = fovy; w.y = fovy; w.z = fovy;
-    Matrix4x4 inter_shift = Matrix4x4::translation(w);
-    // Matrix4x4 inter_shift;
-    // inter_shift[0][0] =.5; inter_shift[0][1] = 0;  inter_shift[0][2] = 0;  inter_shift[0][3] = .5;
-    // inter_shift[1][0] = 0; inter_shift[1][1] = .5; inter_shift[1][2] = 0;  inter_shift[1][3] = .5;
-    // inter_shift[2][0] = 0; inter_shift[2][1] = 0;  inter_shift[2][2] = .5; inter_shift[2][3] = .5;
-    // inter_shift[3][0] = 0; inter_shift[3][1] = 0;  inter_shift[3][2] = 0;  inter_shift[3][3] = 1;
+    // if x is mapped to [-w, w], then transform--> (x+w)/2 ---> [0,w]
+    Matrix4x4 inter_shift;
+    inter_shift[0][0] = .5; inter_shift[0][1] = 0;  inter_shift[0][2] = 0;  inter_shift[0][3] = 0.5;
+    inter_shift[1][0] = 0;  inter_shift[1][1] = .5; inter_shift[1][2] = 0;  inter_shift[1][3] = 0.5;
+    inter_shift[2][0] = 0;  inter_shift[2][1] = 0;  inter_shift[2][2] = .5; inter_shift[2][3] = 0.5;
+    inter_shift[3][0] = 0;  inter_shift[3][1] = 0;  inter_shift[3][2] = 0;  inter_shift[3][3] = 1;
     
-    Matrix4x4 worldToShadowLight = worldToLightNDC;
-    // Matrix4x4 worldToShadowLight = inter_shift * worldToLightNDC;
     // Matrix4x4 worldToShadowLight = worldToLightNDC;
+    Matrix4x4 worldToShadowLight = inter_shift * worldToLightNDC;
     worldToShadowLight_[shadowedLightIndex] = worldToShadowLight;
-    printf("~~~~~~~~~~~~~~~~~~~intershift\n");
-    printf("%f, %f, %f, %f\n", inter_shift[0][0], inter_shift[0][1], inter_shift[0][2], inter_shift[0][3]);
-    printf("%f, %f, %f, %f\n", inter_shift[1][0], inter_shift[1][1], inter_shift[1][2], inter_shift[1][3]);
-    printf("%f, %f, %f, %f\n", inter_shift[2][0], inter_shift[2][1], inter_shift[2][2], inter_shift[2][3]);
-    printf("%f, %f, %f, %f\n", inter_shift[3][0], inter_shift[3][1], inter_shift[3][2], inter_shift[3][3]);
+    printf("~~~~~~~~~~~~~~~~~~~worldToLightNDC\n");
+    printf("%f, %f, %f, %f\n", worldToLightNDC[0][0], worldToLightNDC[0][1], worldToLightNDC[0][2], worldToLightNDC[0][3]);
+    printf("%f, %f, %f, %f\n", worldToLightNDC[1][0], worldToLightNDC[1][1], worldToLightNDC[1][2], worldToLightNDC[1][3]);
+    printf("%f, %f, %f, %f\n", worldToLightNDC[2][0], worldToLightNDC[2][1], worldToLightNDC[2][2], worldToLightNDC[2][3]);
+    printf("%f, %f, %f, %f\n", worldToLightNDC[3][0], worldToLightNDC[3][1], worldToLightNDC[3][2], worldToLightNDC[3][3]);
+
+    printf("~~~~~~~~~~~~~~~~~~~worldToShadowLight\n");
+    printf("%f, %f, %f, %f\n", worldToShadowLight[0][0], worldToShadowLight[0][1], worldToShadowLight[0][2], worldToShadowLight[0][3]);
+    printf("%f, %f, %f, %f\n", worldToShadowLight[1][0], worldToShadowLight[1][1], worldToShadowLight[1][2], worldToShadowLight[1][3]);
+    printf("%f, %f, %f, %f\n", worldToShadowLight[2][0], worldToShadowLight[2][1], worldToShadowLight[2][2], worldToShadowLight[2][3]);
+    printf("%f, %f, %f, %f\n", worldToShadowLight[3][0], worldToShadowLight[3][1], worldToShadowLight[3][2], worldToShadowLight[3][3]);
+
+
+    // // (3) Second shot using translations and biases!
+    // Matrix4x4 translator = Matrix4x4::translation(Vector3D(2));
+    // Matrix4x4 scalor = Matrix4x4::scaling(Vector3D(0.5));
+    // worldToShadowLight_[shadowedLightIndex] = scalor * translator * worldToLightNDC;
+
+
 
 
 

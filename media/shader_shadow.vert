@@ -42,8 +42,14 @@ void main(void)
     //
     // Recall for shadow mapping we need to know the position of the surface relative
     // to each shadowed light source.
-    for (int i = 0; i < MAX_NUM_LIGHTS; i++) {
-        lightspace_pos[i] = shadowlight_mtx[i] * vec4(vtx_position,1);
+    for (int i = 0; i < num_spot_lights; i++) {
+        // mat4 inter_shift;
+        // inter_shift[0][0] = .5; inter_shift[0][1] = 0;  inter_shift[0][2] = 0;  inter_shift[0][3] = .5;
+        // inter_shift[1][0] = 0;  inter_shift[1][1] = .5; inter_shift[1][2] = 0;  inter_shift[1][3] = .5;
+        // inter_shift[2][0] = 0;  inter_shift[2][1] = 0;  inter_shift[2][2] = .5; inter_shift[2][3] = .5;
+        // inter_shift[3][0] = 0;  inter_shift[3][1] = 0;  inter_shift[3][2] = 0;  inter_shift[3][3] = 1;
+        lightspace_pos[i] =  shadowlight_mtx[i] * vec4(position,1);
+        // lightspace_pos[i] = inter_shift * lightspace_pos[i];
     }
 
 

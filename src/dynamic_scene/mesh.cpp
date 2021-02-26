@@ -355,13 +355,17 @@ void Mesh::internalDraw(bool shadowPass, const Matrix4x4& worldToNDC) const {
 
         int numShadowedLights = scene_->getNumShadowedLights();
 
+		printf("Number of shadowed lights is %d\n", numShadowedLights);
+
+
+
         // TODO CS248: Shadow Mapping
         // You need to pass an array of matrices to the shader.
         // They should go from object space to the "light space" for each spot light.
         // In this way, the shader can compute the texture coordinate to sample from the
         // Shadow Map given any point on the object.
         // For examples of passing arrays to the shader, look below for "directional_light_vectors[]" etc.
-		for (int j=0; j<scene_->getNumSpotLights(); j++) {
+		for (int j=0; j<scene_->getNumShadowedLights(); j++) {
             string varname = "shadowlight_mtx[" + std::to_string(j) + "]";
             // const StaticScene::SpotLight* light = scene_->getSpotLight(j);
             shader_->setMatrixParameter(varname, scene_->getWorldToShadowLight(j));

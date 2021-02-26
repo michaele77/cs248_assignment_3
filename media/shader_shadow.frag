@@ -282,18 +282,15 @@ void main(void)
         // Render Shadows for all spot lights
         // CS248 TODO: Shadow Mapping: comute shadowing for spotlight i here 
         float shadow_multiplier = 0.2;
-        // for (int i = 0; i < num_spot_lights; i++) {
-        vec3 shadow_uv = lightspace_pos[i].xyz / lightspace_pos[i].w;
-        // vec4 curr_lightspace = lightspace_pos[i];
-        // shadow_uv[0] = curr_lightspace.x / curr_lightspace.w;
-        shadow_uv = shadow_uv*0.5 + 0.5;
-        // shadow_uv = vec3(0);
+
+        vec3 shadow_uv;
+        shadow_uv.x = lightspace_pos[i].x / lightspace_pos[i].w;
+        shadow_uv.y = lightspace_pos[i].y / lightspace_pos[i].w;
+        shadow_uv.z = lightspace_pos[i].z / lightspace_pos[i].w;
+        // shadow_uv = shadow_uv*0.5 + 0.5;
+
         float closestDepth = texture(shadowTextureSampler, shadow_uv.xy).r;
-        // float depthMap_dist = 0;
-
         float currentDepth = shadow_uv.z;
-
-        // float pos_delta = real_dist - depthMap_dist;
 
         if (currentDepth > closestDepth) {
             intensity *= shadow_multiplier;

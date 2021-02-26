@@ -18,7 +18,7 @@
 #include "../static_scene/scene.h"
 #include "../static_scene/light.h"
 
-#define SCENE_MAX_SHADOWED_LIGHTS 10
+#define SCENE_MAX_SHADOWED_LIGHTS 5
 
 namespace CS248 {
 
